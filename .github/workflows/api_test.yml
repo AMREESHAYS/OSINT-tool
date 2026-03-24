@@ -1,0 +1,47 @@
+name: API Key Test
+
+on: [push]
+
+jobs:
+  test-apis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Test Shodan API
+        env:
+          SHODAN_API_KEY: ${{ secrets.SHODAN_API_KEY }}
+        run: |
+          python - <<EOF
+import requests, os
+key = os.getenv("SHODAN_API_KEY")
+url = f"https://api.shodan.io/api-info?key={key}"
+r = requests.get(url)
+print("Shodan Status:", r.status_code)
+print(r.text[:200])
+EOF
+
+      - name: Test VirusTotal API
+        env:
+          VIRUSTOTAL_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
+        run: |
+          python - <<EOF
+import requests, os
+key = os.getenv("VIRUSTOTAL_API_KEY")
+url = "https://www.virustotal.com/api/v3/domains/google.com"
+headers = {"x-apikey": key}
+r = requests.get(url, headers=headers)
+print("VT Status:", r.status_code)
+print(r.text[:200])
+EOF
