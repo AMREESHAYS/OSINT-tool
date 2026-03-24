@@ -1,6 +1,7 @@
 name: API Key Test
 
-on: [push]
+on:
+  workflow_dispatch:
 
 jobs:
   test-apis:
