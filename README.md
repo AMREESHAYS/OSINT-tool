@@ -31,6 +31,24 @@ osint modules                          # list modules
 Flags: `--json/--md/--html <path>`, `--only`, `--skip`, `--no-nmap`,
 `--concurrency`, `--timeout`, `-q/--quiet`.
 
+## Web dashboard (Phase 2a)
+
+A live dashboard that streams findings in as each module finishes, with a risk
+gauge and a relationship graph. Two processes — the SSE API and the Vite dev server:
+
+```bash
+# 1. API (streams findings live over SSE)
+osint serve                      # http://127.0.0.1:8000
+
+# 2. Frontend
+cd osint-dashboard/frontend
+npm install && npm run dev       # http://localhost:5173
+```
+
+Open http://localhost:5173, enter a target, and watch modules stream in with a
+live risk gauge and relationship graph. Set `VITE_API_BASE_URL` to point the
+frontend at a non-default API origin.
+
 ## Modules
 
 DNS · subdomains (crt.sh) · ports (nmap, optional) · security headers ·

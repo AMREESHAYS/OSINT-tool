@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 
 import type { GraphEdge, GraphNode } from '../types/osint';
@@ -18,9 +19,26 @@ const NODE_COLORS: Record<string, string> = {
 };
 
 function GraphView({ nodes, edges }: GraphViewProps) {
+  // react-force-graph-2d collapses to 0 height when it measures its own block
+  // wrapper instead of the sized card, so measure the container and pass explicit dims.
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return undefined;
+    const update = () => setSize({ width: el.clientWidth, height: el.clientHeight });
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="cyber-card h-[420px] overflow-hidden p-2">
+    <div ref={containerRef} className="cyber-card h-[420px] overflow-hidden p-2">
       <ForceGraph2D
+        width={size.width}
+        height={size.height}
         graphData={{ nodes, links: edges }}
         nodeLabel={(node) => `${node.id} (${node.type})`}
         linkDirectionalParticles={1}
