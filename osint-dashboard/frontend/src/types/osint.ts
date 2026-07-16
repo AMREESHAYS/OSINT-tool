@@ -1,57 +1,35 @@
-export type AnalyzeResponse = {
-  request_id: string;
-  normalized_query: string;
-  input_type: 'email' | 'domain' | 'username';
-  message: string;
-  next_steps: string[];
+export type Severity = 'INFO' | 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export type Finding = {
+  module: string;
+  title: string;
+  detail: string;
+  severity: Severity;
+  data: Record<string, unknown>;
 };
 
-export type Breach = {
-  name: string;
-  date: string;
-  data_exposed: string[];
+export type ModuleResult = {
+  module: string;
+  ok: boolean;
+  error: string | null;
+  duration_ms: number;
+  findings: Finding[];
 };
 
-export type Profile = {
-  platform: string;
-  url: string;
-  found: boolean;
-};
-
-export type GraphNode = {
-  id: string;
-  type: string;
-};
-
-export type GraphEdge = {
-  source: string;
+export type ScanReport = {
   target: string;
+  target_type: string;
+  started_at: string;
+  finished_at: string;
+  modules: ModuleResult[];
+  risk_score: number;
+  risk_level: Severity;
 };
 
-export type StoredResult = {
-  request_id: string;
-  query: string;
-  input_type: 'email' | 'domain' | 'username';
-  status: string;
-  details?: {
-    summary?: string;
-    domain_intelligence?: {
-      dns?: {
-        a?: string[];
-        mx?: string[];
-        txt?: string[];
-        errors?: Record<string, string>;
-      };
-    };
-    email_intelligence?: {
-      breaches?: Breach[];
-    };
-    username_intelligence?: {
-      profiles?: Profile[];
-    };
-    graph?: {
-      nodes: GraphNode[];
-      edges: GraphEdge[];
-    };
-  };
+export type GraphNode = { id: string; type: string };
+export type GraphEdge = { source: string; target: string };
+
+export type ReportPayload = {
+  report: ScanReport;
+  graph: { nodes: GraphNode[]; edges: GraphEdge[] };
 };
