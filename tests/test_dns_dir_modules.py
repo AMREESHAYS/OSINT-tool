@@ -31,6 +31,19 @@ async def test_dir_bruteforce_flags_exposed_git(ctx):
 
 @respx.mock
 @pytest.mark.asyncio
+async def test_subdomains_handles_non_json(ctx):
+    # crt.sh often rate-limits and returns a non-JSON body; the module must
+    # degrade to an INFO finding, not raise.
+    respx.get(url__regex=r"https://crt\.sh/.*").mock(
+        return_value=httpx.Response(200, text="rate limited, try again"))
+    findings = await SubdomainsModule().run("example.com", ctx)
+    assert len(findings) == 1
+    assert "unavailable" in findings[0].title
+    assert findings[0].severity is Severity.INFO
+
+
+@respx.mock
+@pytest.mark.asyncio
 async def test_subdomains_from_crtsh(ctx):
     payload = [{"name_value": "a.example.com\nb.example.com"}, {"name_value": "a.example.com"}]
     respx.get(url__regex=r"https://crt\.sh/.*").mock(return_value=httpx.Response(200, json=payload))

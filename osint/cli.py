@@ -51,13 +51,15 @@ def scan(
     no_nmap: bool = typer.Option(False, "--no-nmap", help="Disable port scanning"),
     concurrency: int = typer.Option(20, "--concurrency"),
     timeout: float = typer.Option(10.0, "--timeout"),
+    quiet: bool = typer.Option(False, "--quiet", "-q", help="Suppress the live panel and summary (reports still written)"),
 ):
     """Run a recon scan against TARGET."""
     if classify(target) == "unknown":
         console.print(f"[red]Could not classify target:[/red] {target!r}")
         raise typer.Exit(code=2)
 
-    console.print("[dim]Only scan targets you own or are authorized to test.[/dim]")
+    if not quiet:
+        console.print("[dim]Only scan targets you own or are authorized to test.[/dim]")
 
     mods = all_modules()
     if only:
@@ -81,6 +83,8 @@ def scan(
         statuses[module] = "running…" if kind == "module_started" else "done"
 
     async def go() -> ScanReport:
+        if quiet:
+            return await run_scan(target, settings, mods)
         with Live(render_panel(), console=console, refresh_per_second=8) as live:
             def cb(kind, module):
                 on_event(kind, module)
@@ -88,7 +92,8 @@ def scan(
             return await run_scan(target, settings, mods, on_event=cb)
 
     report = asyncio.run(go())
-    _print_summary(report)
+    if not quiet:
+        _print_summary(report)
 
     for path, renderer in ((json_out, render_json), (md_out, render_markdown), (html_out, render_html)):
         if path:
