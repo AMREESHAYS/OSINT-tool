@@ -45,6 +45,11 @@ async def _run_one(module: Module, target: str, ctx: Context, sem, on_event) -> 
                 module=module.name, ok=False, error=str(exc) or exc.__class__.__name__,
                 duration_ms=int((time.perf_counter() - start) * 1000), findings=[],
             )
+        except Exception as exc:  # noqa: BLE001 - total module isolation: no module may abort the scan
+            result = ModuleResult(
+                module=module.name, ok=False, error=str(exc) or exc.__class__.__name__,
+                duration_ms=int((time.perf_counter() - start) * 1000), findings=[],
+            )
         if on_event:
             on_event("module_finished", module.name)
         return result

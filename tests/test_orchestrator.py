@@ -50,3 +50,20 @@ async def test_failing_module_does_not_abort_scan():
     assert report.target_type == "domain"
     assert ("module_started", "good") in events
     assert ("module_finished", "boom") in events
+
+
+class KeyErrorModule:
+    name = "keyerror"
+    applies_to = {"domain"}
+
+    async def run(self, target, ctx):
+        raise KeyError("unexpected bug")
+
+
+@pytest.mark.asyncio
+async def test_unexpected_exception_is_isolated():
+    report = await scan("example.com", Settings(), [GoodModule(), KeyErrorModule()])
+    by_name = {m.module: m for m in report.modules}
+    assert by_name["good"].ok is True
+    assert by_name["keyerror"].ok is False
+    assert "unexpected bug" in by_name["keyerror"].error
