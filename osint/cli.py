@@ -31,6 +31,14 @@ def version():
 
 
 @app.command()
+def serve(host: str = typer.Option("127.0.0.1", "--host"),
+          port: int = typer.Option(8000, "--port")):
+    """Run the SSE API server (uvicorn)."""
+    import uvicorn
+    uvicorn.run("osint.api:app", host=host, port=port)
+
+
+@app.command()
 def modules():
     """List available modules and the target types they apply to."""
     table = Table(title="Modules")

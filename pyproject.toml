@@ -10,6 +10,8 @@ dependencies = [
     "rich>=13.7",
     "dnspython>=2.6",
     "selectolax>=0.3.21",
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
 ]
 
 [project.optional-dependencies]
