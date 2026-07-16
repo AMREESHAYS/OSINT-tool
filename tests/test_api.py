@@ -74,3 +74,14 @@ async def test_scan_unknown_target_emits_error():
     events = _parse_sse(text)
     assert events[0]["event"] == "error"
     assert "classify" in events[0]["data"]["detail"].lower()
+
+
+@pytest.mark.asyncio
+async def test_scan_failure_emits_error_event(monkeypatch):
+    async def boom(*args, **kwargs):
+        raise RuntimeError("scan exploded")
+    monkeypatch.setattr(api, "scan", boom)
+    text = await _get_text("/scan?target=example.com")
+    events = _parse_sse(text)
+    assert events[-1]["event"] == "error"
+    assert "exploded" in events[-1]["data"]["detail"]

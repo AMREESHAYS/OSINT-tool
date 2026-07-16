@@ -75,10 +75,13 @@ async def scan_stream(target: str, only: str | None = None,
                 yield _sse("module_started", {"module": item["module"]})
             else:
                 yield _sse("module_finished", item["result"].model_dump(mode="json"))
-        await task
-        report = holder["report"]
-        yield _sse("report", {"report": json.loads(report.model_dump_json()),
-                              "graph": build_graph(report)})
+        try:
+            await task
+            report = holder["report"]
+            yield _sse("report", {"report": json.loads(report.model_dump_json()),
+                                  "graph": build_graph(report)})
+        except Exception as exc:  # noqa: BLE001 - surface any scan failure as an SSE error event, never a dead stream
+            yield _sse("error", {"detail": str(exc) or exc.__class__.__name__})
 
     return StreamingResponse(gen(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
