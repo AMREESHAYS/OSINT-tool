@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 
 import type { GraphEdge, GraphNode } from '../types/osint';
@@ -34,12 +34,15 @@ function GraphView({ nodes, edges }: GraphViewProps) {
     return () => observer.disconnect();
   }, []);
 
+  // Stable reference so a resize-driven re-render doesn't re-heat the force simulation.
+  const graphData = useMemo(() => ({ nodes, links: edges }), [nodes, edges]);
+
   return (
     <div ref={containerRef} className="cyber-card h-[420px] overflow-hidden p-2">
       <ForceGraph2D
         width={size.width}
         height={size.height}
-        graphData={{ nodes, links: edges }}
+        graphData={graphData}
         nodeLabel={(node) => `${node.id} (${node.type})`}
         linkDirectionalParticles={1}
         linkDirectionalParticleSpeed={0.004}
