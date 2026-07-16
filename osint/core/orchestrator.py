@@ -5,28 +5,10 @@ from datetime import datetime, timezone
 import httpx
 
 from osint.core.classify import classify
-from osint.core.models import ModuleResult, ScanReport, Severity
+from osint.core.models import ModuleResult, ScanReport
 from osint.core.settings import Settings
 from osint.modules.base import Context, Module
-
-
-def _score(findings):
-    weights = {
-        Severity.CRITICAL: 10, Severity.HIGH: 5,
-        Severity.MEDIUM: 2, Severity.LOW: 1, Severity.INFO: 0,
-    }
-    total = sum(weights[f.severity] for f in findings)
-    if total >= 15:
-        level = Severity.CRITICAL
-    elif total >= 8:
-        level = Severity.HIGH
-    elif total >= 3:
-        level = Severity.MEDIUM
-    elif total >= 1:
-        level = Severity.LOW
-    else:
-        level = Severity.INFO
-    return total, level
+from osint.modules.risk import evaluate as _score
 
 
 async def _run_one(module: Module, target: str, ctx: Context, sem, on_event) -> ModuleResult:
