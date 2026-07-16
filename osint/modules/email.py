@@ -19,7 +19,8 @@ class EmailModule:
             try:
                 return [str(r.exchange) for r in dns.resolver.resolve(domain, "MX")]
             except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN,
-                    dns.resolver.NoNameservers, dns.exception.Timeout):
+                    dns.resolver.NoNameservers, dns.resolver.NoResolverConfiguration,
+                    dns.exception.Timeout):
                 return []
 
         mx = await asyncio.to_thread(_mx)

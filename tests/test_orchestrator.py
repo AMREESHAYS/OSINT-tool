@@ -4,7 +4,6 @@ import pytest
 from osint.core.models import Finding, Severity
 from osint.core.orchestrator import scan
 from osint.core.settings import Settings
-from osint.modules.base import Context
 
 
 class GoodModule:

@@ -39,7 +39,12 @@ async def test_username_reports_hit(ctx):
 
 
 @pytest.mark.asyncio
-async def test_email_extracts_domain(ctx):
+async def test_email_extracts_domain(ctx, monkeypatch):
+    # Fake the MX lookup so the test never touches the network (constraint:
+    # no live DNS in the suite).
+    fake_mx = type("R", (), {"exchange": "mail.example.com."})()
+    monkeypatch.setattr("dns.resolver.resolve", lambda domain, rtype: [fake_mx])
     findings = await EmailModule().run("john@example.com", ctx)
     joined = " ".join(f.detail for f in findings)
     assert "example.com" in joined
+    assert "mail.example.com." in joined

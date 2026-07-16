@@ -12,7 +12,7 @@ def _resolve(domain: str) -> dict[str, list[str]]:
         try:
             out[rtype] = [str(r) for r in dns.resolver.resolve(domain, rtype)]
         except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.resolver.NoNameservers,
-                dns.exception.Timeout):
+                dns.resolver.NoResolverConfiguration, dns.exception.Timeout):
             out[rtype] = []
     return out
 

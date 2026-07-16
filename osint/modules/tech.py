@@ -1,4 +1,4 @@
-from osint.core.models import Finding, Severity
+from osint.core.models import Finding
 from osint.modules.base import Context
 from osint.modules.headers import _url
 

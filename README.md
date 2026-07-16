@@ -29,7 +29,7 @@ osint modules                          # list modules
 ```
 
 Flags: `--json/--md/--html <path>`, `--only`, `--skip`, `--no-nmap`,
-`--concurrency`, `--timeout`.
+`--concurrency`, `--timeout`, `-q/--quiet`.
 
 ## Modules
 

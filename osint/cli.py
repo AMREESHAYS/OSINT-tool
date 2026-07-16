@@ -34,7 +34,8 @@ def version():
 def modules():
     """List available modules and the target types they apply to."""
     table = Table(title="Modules")
-    table.add_column("Module"); table.add_column("Applies to")
+    table.add_column("Module")
+    table.add_column("Applies to")
     for m in all_modules():
         table.add_row(m.name, ", ".join(sorted(m.applies_to)))
     console.print(table)
@@ -74,7 +75,8 @@ def scan(
 
     def render_panel() -> Table:
         t = Table(title=f"Scanning {target}")
-        t.add_column("Module"); t.add_column("Status")
+        t.add_column("Module")
+        t.add_column("Status")
         for name, state in statuses.items():
             t.add_row(name, state)
         return t
@@ -103,7 +105,9 @@ def scan(
 
 def _print_summary(report: ScanReport):
     table = Table(title=f"Findings — {report.target}")
-    table.add_column("Severity"); table.add_column("Module"); table.add_column("Title")
+    table.add_column("Severity")
+    table.add_column("Module")
+    table.add_column("Title")
     for mod in report.modules:
         for f in mod.findings:
             table.add_row(f"[{_SEV_COLOR[f.severity]}]{f.severity.value}[/]", mod.module, f.title)
