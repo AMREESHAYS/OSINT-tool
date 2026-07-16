@@ -33,7 +33,7 @@ async def _run_one(module: Module, target: str, ctx: Context, sem, on_event) -> 
                 duration_ms=int((time.perf_counter() - start) * 1000), findings=[],
             )
         if on_event:
-            on_event("module_finished", module.name)
+            on_event("module_finished", module.name, result)
         return result
 
 
