@@ -75,15 +75,15 @@ docker run --rm osint scan example.com
 
 ## 🏗️ Architecture
 
-```mermaid
-flowchart LR
-    T["target"] --> C{"classify"}
-    C --> O["async orchestrator"]
-    O --> M["isolated modules:<br>dns, subdomains, ports, headers,<br>tech, crawler, dir-brute, js,<br>username, email, screenshot, breach"]
-    M --> R["ScanReport + risk score"]
-    R --> CLI["Rich CLI + reports"]
-    R --> API["FastAPI SSE endpoint"]
-    API --> UI["React dashboard:<br>live findings, risk gauge, graph"]
+```text
+                                          ┌──▶  Rich CLI  +  JSON / MD / HTML reports
+ target ─▶ classify ─▶ async orchestrator ─▶ ScanReport ──┤
+                          │                 (+ risk score) └──▶  FastAPI SSE ─▶ React dashboard
+                          │                                      (live findings · risk gauge · graph)
+                          ▼
+          isolated modules (one failure never aborts the scan):
+          dns · subdomains · ports · headers · tech · crawler · dir-brute
+          js-endpoints · username · email · screenshot · breach
 ```
 
 One `ScanReport` (Pydantic) is the single source of truth — shared by the CLI, the reporters, the SSE API, and the TypeScript frontend. No adapter layers.
