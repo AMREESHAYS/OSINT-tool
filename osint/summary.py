@@ -1,3 +1,5 @@
+import os
+
 from osint.core.models import ScanReport, Severity
 
 
@@ -30,6 +32,31 @@ def _heuristic(report: ScanReport) -> str:
     return " ".join(parts)
 
 
+def _llm_summary(report: ScanReport) -> str | None:
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if not key:
+        return None
+    try:
+        import anthropic  # optional dependency
+    except ImportError:
+        return None
+    try:
+        client = anthropic.Anthropic(api_key=key)
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=200,
+            system="You are a security recon analyst. Summarize this scan in 2-3 concise sentences.",
+            messages=[{"role": "user", "content": report.model_dump_json()}],
+        )
+        text = "".join(block.text for block in message.content if getattr(block, "type", "") == "text")
+        return text.strip() or None
+    except Exception:  # noqa: BLE001 - any LLM failure must fall back to the heuristic, never raise
+        return None
+
+
 def summarize(report: ScanReport, use_llm: bool = False) -> str:
-    # LLM path added in a later task; heuristic is always the fallback.
+    if use_llm:
+        llm = _llm_summary(report)
+        if llm:
+            return llm
     return _heuristic(report)

@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from osint.core.models import Finding, ModuleResult, ScanReport, Severity
 from osint.summary import summarize
+from osint import summary as summary_mod
 
 
 def _report(modules, level=Severity.MEDIUM, score=6):
@@ -37,3 +38,22 @@ def test_use_llm_without_key_falls_back(monkeypatch):
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     text = summarize(_report([]), use_llm=True)
     assert "example.com" in text  # heuristic, no crash
+
+
+def test_use_llm_uses_llm_result(monkeypatch):
+    monkeypatch.setattr(summary_mod, "_llm_summary", lambda report: "LLM narrative here.")
+    text = summarize(_report([]), use_llm=True)
+    assert text == "LLM narrative here."
+
+
+def test_use_llm_falls_back_when_llm_returns_none(monkeypatch):
+    monkeypatch.setattr(summary_mod, "_llm_summary", lambda report: None)
+    text = summarize(_report([]), use_llm=True)
+    assert "example.com" in text  # heuristic fallback
+
+
+def test_use_llm_false_never_calls_llm(monkeypatch):
+    def boom(report):
+        raise AssertionError("LLM must not be called when use_llm=False")
+    monkeypatch.setattr(summary_mod, "_llm_summary", boom)
+    assert "example.com" in summarize(_report([]), use_llm=False)
