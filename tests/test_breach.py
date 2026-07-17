@@ -43,3 +43,15 @@ async def test_breach_password_is_high(monkeypatch, ctx):
     findings = await BreachModule().run("a@example.com", ctx)
     high = [f for f in findings if f.severity is Severity.HIGH]
     assert high and "Acme" in high[0].title
+
+
+@respx.mock
+@pytest.mark.asyncio
+async def test_breach_url_encodes_email(monkeypatch, ctx):
+    monkeypatch.setenv("HIBP_API_KEY", "k")
+    route = respx.get(url__regex=r"https://haveibeenpwned\.com/api/v3/breachedaccount/.*").mock(
+        return_value=httpx.Response(404))
+    await BreachModule().run("a+b@example.com", ctx)
+    # plus-addressed email must be percent-encoded in the path, not sent raw
+    requested = str(route.calls.last.request.url)
+    assert "a%2Bb%40example.com" in requested

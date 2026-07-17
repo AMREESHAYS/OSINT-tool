@@ -1,4 +1,5 @@
 import os
+from urllib.parse import quote
 
 from osint.core.models import Finding, Severity
 from osint.modules.base import Context
@@ -16,7 +17,8 @@ class BreachModule:
             return [Finding(module=self.name, title="Breach check skipped",
                             detail="Set HIBP_API_KEY to enable HaveIBeenPwned breach lookups.")]
 
-        url = f"https://haveibeenpwned.com/api/v3/breachedaccount/{target}?truncateResponse=false"
+        account = quote(target, safe="")
+        url = f"https://haveibeenpwned.com/api/v3/breachedaccount/{account}?truncateResponse=false"
         headers = {"hibp-api-key": key, "User-Agent": "osint-recon"}
         resp = await ctx.client.get(url, headers=headers)
 
