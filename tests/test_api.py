@@ -85,3 +85,13 @@ async def test_scan_failure_emits_error_event(monkeypatch):
     events = _parse_sse(text)
     assert events[-1]["event"] == "error"
     assert "exploded" in events[-1]["data"]["detail"]
+
+
+@pytest.mark.asyncio
+async def test_report_event_includes_summary(monkeypatch):
+    monkeypatch.setattr(api, "all_modules", lambda: [FakeModule()])
+    text = await _get_text("/scan?target=example.com")
+    events = _parse_sse(text)
+    report_ev = events[-1]["data"]
+    assert isinstance(report_ev["summary"], str)
+    assert "example.com" in report_ev["summary"]

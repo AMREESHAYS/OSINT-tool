@@ -10,6 +10,7 @@ from osint.core.orchestrator import scan
 from osint.core.settings import Settings
 from osint.graph import build_graph
 from osint.modules.registry import all_modules
+from osint.summary import summarize
 
 app = FastAPI(title="OSINT Recon Engine API")
 
@@ -39,7 +40,8 @@ async def modules():
 
 @app.get("/scan")
 async def scan_stream(target: str, only: str | None = None,
-                      skip: str | None = None, no_nmap: bool = False):
+                      skip: str | None = None, no_nmap: bool = False,
+                      ai: bool = False):
     async def gen():
         if classify(target) == "unknown":
             yield _sse("error", {"detail": f"Could not classify target: {target!r}"})
@@ -78,8 +80,11 @@ async def scan_stream(target: str, only: str | None = None,
         try:
             await task
             report = holder["report"]
+            # summarize may make a blocking LLM call on the ?ai=true path — keep it off the event loop.
+            summary = await asyncio.to_thread(summarize, report, ai)
             yield _sse("report", {"report": json.loads(report.model_dump_json()),
-                                  "graph": build_graph(report)})
+                                  "graph": build_graph(report),
+                                  "summary": summary})
         except Exception as exc:  # noqa: BLE001 - surface any scan failure as an SSE error event, never a dead stream
             yield _sse("error", {"detail": str(exc) or exc.__class__.__name__})
 

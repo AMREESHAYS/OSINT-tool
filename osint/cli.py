@@ -14,6 +14,7 @@ from osint.modules.registry import all_modules
 from osint.reporting.html_report import render_html
 from osint.reporting.json_report import render_json
 from osint.reporting.markdown_report import render_markdown
+from osint.summary import summarize
 
 app = typer.Typer(add_completion=False, help="OSINT reconnaissance engine — no paid API required.")
 console = Console()
@@ -61,6 +62,7 @@ def scan(
     concurrency: int = typer.Option(20, "--concurrency"),
     timeout: float = typer.Option(10.0, "--timeout"),
     quiet: bool = typer.Option(False, "--quiet", "-q", help="Suppress the live panel and summary (reports still written)"),
+    ai: bool = typer.Option(False, "--ai", help="Use the optional LLM summary (needs ANTHROPIC_API_KEY)"),
 ):
     """Run a recon scan against TARGET."""
     if classify(target) == "unknown":
@@ -104,6 +106,7 @@ def scan(
     report = asyncio.run(go())
     if not quiet:
         _print_summary(report)
+        console.print(f"\n[cyan]{summarize(report, use_llm=ai)}[/]")
 
     for path, renderer in ((json_out, render_json), (md_out, render_markdown), (html_out, render_html)):
         if path:

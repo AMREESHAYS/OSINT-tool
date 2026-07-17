@@ -46,6 +46,9 @@ function ResultsPage() {
     () => [...findings].sort((a, b) => SEV_ORDER.indexOf(a.severity) - SEV_ORDER.indexOf(b.severity)),
     [findings],
   );
+  const screenshot = findings.find((f) => f.module === 'screenshot' && typeof f.data?.image === 'string');
+  const breaches = findings.filter((f) => f.module === 'breach');
+  const summary = payload?.summary;
 
   const report = payload?.report;
   const graph = payload?.graph ?? { nodes: [], edges: [] };
@@ -70,7 +73,28 @@ function ResultsPage() {
           <div className="cyber-card flex items-center justify-center p-6 text-cyber-muted">Computing risk…</div>
         )}
         <SectionCard title="AI Summary">
-          <p className="text-cyber-muted">Coming in Phase 2b.</p>
+          <p className="text-slate-200">{summary ?? (payload ? 'No summary.' : 'Analyzing…')}</p>
+        </SectionCard>
+      </div>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <SectionCard title="Screenshot">
+          {screenshot ? (
+            <img src={screenshot.data.image as string} alt="Homepage screenshot" className="max-w-full rounded-md" />
+          ) : (
+            <p className="text-cyber-muted">No screenshot (domain scans only; enable the screenshots extra).</p>
+          )}
+        </SectionCard>
+        <SectionCard title="Breaches">
+          {breaches.length === 0 ? (
+            <p className="text-cyber-muted">No breach data (email scans with HIBP_API_KEY).</p>
+          ) : (
+            breaches.map((b, i) => (
+              <p key={`${b.title}-${i}`} className="text-slate-200">
+                <span className="text-cyber-accent">{b.title}</span> — {b.detail}
+              </p>
+            ))
+          )}
         </SectionCard>
       </div>
 

@@ -34,3 +34,9 @@ def test_scan_quiet_suppresses_panel_and_notice():
     result = runner.invoke(app, ["scan", "example.com", "--only", "none", "-q"])
     assert result.exit_code == 0
     assert "authorized to test" not in result.stdout
+
+
+def test_scan_prints_summary():
+    result = runner.invoke(app, ["scan", "example.com", "--only", "none"])
+    assert result.exit_code == 0
+    assert "risk" in result.stdout.lower()

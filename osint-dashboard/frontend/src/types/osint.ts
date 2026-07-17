@@ -32,4 +32,5 @@ export type GraphEdge = { source: string; target: string };
 export type ReportPayload = {
   report: ScanReport;
   graph: { nodes: GraphNode[]; edges: GraphEdge[] };
+  summary: string;
 };
