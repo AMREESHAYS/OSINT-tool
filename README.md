@@ -34,9 +34,20 @@ A reconnaissance engine for security learners, bug-bounty hunters, and researche
 ## 🚀 Quick start
 
 ```bash
-pipx install .                # or: uvx --from . osint
-osint scan example.com        # full domain recon with a live panel
+# 1. Clone
+git clone https://github.com/AMREESHAYS/OSINT-tool.git
+cd OSINT-tool
+
+# 2. Install the CLI (Python 3.11+)
+pipx install .            # isolated install  ·  or:  pip install .
+#   no install at all →   uvx --from . osint scan example.com
+
+# 3. Scan
+osint scan example.com   # full domain recon with a live panel
 ```
+
+> **Port scanning uses `nmap`.** Install it (`sudo apt install nmap` / `brew install nmap`) for the ports
+> module, or pass `--no-nmap` — the scan runs fine either way (a missing `nmap` just yields an "unavailable" notice).
 
 <div align="center">
 <em>DNS, subdomains, ports, headers, tech, crawler, dir-brute, JS endpoints — streamed live, scored, graphed.</em>
@@ -54,23 +65,25 @@ osint modules                                # list available modules
 
 **Flags:** `--json/--md/--html <path>` · `--only` · `--skip` · `--no-nmap` · `--ai` · `--concurrency` · `--timeout` · `-q/--quiet`
 
-Docker (bundles `nmap`):
+### Docker (bundles `nmap`, no local Python needed)
 
 ```bash
-docker build -t osint . && docker run --rm osint scan example.com
+git clone https://github.com/AMREESHAYS/OSINT-tool.git && cd OSINT-tool
+docker build -t osint .
+docker run --rm osint scan example.com
 ```
 
 ## 🏗️ Architecture
 
 ```mermaid
 flowchart LR
-    T([target]) --> C{classify}
-    C --> O[async orchestrator]
-    O -->|isolated modules| M[dns · subdomains · ports · headers<br/>tech · crawler · dir-brute · js<br/>username · email · screenshot · breach]
-    M --> R[[ScanReport<br/>+ risk score]]
-    R --> CLI[Rich CLI + reports]
-    R --> API[FastAPI SSE /scan]
-    API --> UI[React dashboard<br/>live findings · risk gauge · graph]
+    T["target"] --> C{"classify"}
+    C --> O["async orchestrator"]
+    O --> M["isolated modules:<br>dns, subdomains, ports, headers,<br>tech, crawler, dir-brute, js,<br>username, email, screenshot, breach"]
+    M --> R["ScanReport + risk score"]
+    R --> CLI["Rich CLI + reports"]
+    R --> API["FastAPI SSE endpoint"]
+    API --> UI["React dashboard:<br>live findings, risk gauge, graph"]
 ```
 
 One `ScanReport` (Pydantic) is the single source of truth — shared by the CLI, the reporters, the SSE API, and the TypeScript frontend. No adapter layers.
