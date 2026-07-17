@@ -7,7 +7,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<InputPage />} />
-      <Route path="/results/:id" element={<ResultsPage />} />
+      <Route path="/results" element={<ResultsPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

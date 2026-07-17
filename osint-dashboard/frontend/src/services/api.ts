@@ -1,29 +1,43 @@
-import type { AnalyzeResponse, StoredResult } from '../types/osint';
+import type { ModuleResult, ReportPayload } from '../types/osint';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
 
-export async function analyzeQuery(query: string): Promise<AnalyzeResponse> {
-  const response = await fetch(`${API_BASE_URL}/analyze`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query }),
+export type ScanStreamHandlers = {
+  onModuleStarted: (module: string) => void;
+  onModuleFinished: (result: ModuleResult) => void;
+  onReport: (payload: ReportPayload) => void;
+  onError: (detail: string) => void;
+};
+
+export function openScanStream(target: string, handlers: ScanStreamHandlers): EventSource {
+  const url = `${API_BASE_URL}/scan?target=${encodeURIComponent(target)}`;
+  const es = new EventSource(url);
+  let settled = false;
+  const finish = () => {
+    settled = true;
+    es.close();
+  };
+
+  es.addEventListener('module_started', (e) => {
+    handlers.onModuleStarted(JSON.parse((e as MessageEvent).data).module);
+  });
+  es.addEventListener('module_finished', (e) => {
+    handlers.onModuleFinished(JSON.parse((e as MessageEvent).data) as ModuleResult);
+  });
+  es.addEventListener('report', (e) => {
+    handlers.onReport(JSON.parse((e as MessageEvent).data) as ReportPayload);
+    finish();
+  });
+  es.addEventListener('error', (e) => {
+    if (settled) return;
+    const raw = (e as MessageEvent).data;
+    if (raw) {
+      handlers.onError(JSON.parse(raw).detail ?? 'Scan error.');
+    } else {
+      handlers.onError('Connection lost.');
+    }
+    finish();
   });
 
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.detail ?? 'Failed to analyze target.');
-  }
-
-  return response.json() as Promise<AnalyzeResponse>;
-}
-
-export async function getResultById(id: string): Promise<StoredResult> {
-  const response = await fetch(`${API_BASE_URL}/results/${id}`);
-
-  if (!response.ok) {
-    const errorBody = await response.json().catch(() => ({}));
-    throw new Error(errorBody.detail ?? 'Failed to fetch results.');
-  }
-
-  return response.json() as Promise<StoredResult>;
+  return es;
 }

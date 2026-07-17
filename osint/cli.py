@@ -31,6 +31,14 @@ def version():
 
 
 @app.command()
+def serve(host: str = typer.Option("127.0.0.1", "--host"),
+          port: int = typer.Option(8000, "--port")):
+    """Run the SSE API server (uvicorn)."""
+    import uvicorn
+    uvicorn.run("osint.api:app", host=host, port=port)
+
+
+@app.command()
 def modules():
     """List available modules and the target types they apply to."""
     table = Table(title="Modules")
@@ -81,15 +89,15 @@ def scan(
             t.add_row(name, state)
         return t
 
-    def on_event(kind: str, module: str):
+    def on_event(kind: str, module: str, result=None):
         statuses[module] = "running…" if kind == "module_started" else "done"
 
     async def go() -> ScanReport:
         if quiet:
             return await run_scan(target, settings, mods)
         with Live(render_panel(), console=console, refresh_per_second=8) as live:
-            def cb(kind, module):
-                on_event(kind, module)
+            def cb(kind, module, result=None):
+                on_event(kind, module, result)
                 live.update(render_panel())
             return await run_scan(target, settings, mods, on_event=cb)
 

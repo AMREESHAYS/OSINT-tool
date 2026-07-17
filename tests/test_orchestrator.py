@@ -37,7 +37,7 @@ async def test_failing_module_does_not_abort_scan():
         "example.com",
         Settings(),
         [GoodModule(), BoomModule(), WrongTypeModule()],
-        on_event=lambda kind, module: events.append((kind, module)),
+        on_event=lambda kind, module, result=None: events.append((kind, module)),
     )
     by_name = {m.module: m for m in report.modules}
     # WrongTypeModule filtered out (applies_to mismatch)
@@ -66,3 +66,16 @@ async def test_unexpected_exception_is_isolated():
     assert by_name["good"].ok is True
     assert by_name["keyerror"].ok is False
     assert "unexpected bug" in by_name["keyerror"].error
+
+
+@pytest.mark.asyncio
+async def test_finished_event_carries_result():
+    seen = {}
+
+    def on_event(kind, module, result=None):
+        if kind == "module_finished":
+            seen[module] = result
+
+    await scan("example.com", Settings(), [GoodModule()], on_event=on_event)
+    assert seen["good"].ok is True
+    assert seen["good"].findings[0].title == "ok"
