@@ -1,84 +1,139 @@
-# 🕵️ OSINT Recon Engine
+<div align="center">
 
-A fast, async **Open Source Intelligence** reconnaissance tool — **no paid API required**.
-Built for security learners, bug-bounty hunters, and researchers.
+<img src="assets/banner.svg" alt="OSINT Recon Engine" width="100%">
 
-> ⚠️ Only scan targets you own or are explicitly authorized to test.
+<br>
 
-## Install
+**Fast, async open-source reconnaissance — with a live web dashboard and _no paid API required_.**
+
+[![CI](https://github.com/AMREESHAYS/OSINT-tool/actions/workflows/ci.yml/badge.svg)](https://github.com/AMREESHAYS/OSINT-tool/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-00ffa6.svg)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB.svg)](https://www.python.org/)
+[![Lint: Ruff](https://img.shields.io/badge/lint-ruff-D7FF64.svg)](https://github.com/astral-sh/ruff)
+[![Paid API: not required](https://img.shields.io/badge/paid%20API-not%20required-00ffa6.svg)](#)
+
+</div>
+
+> [!WARNING]
+> Only scan targets you own or are explicitly authorized to test.
+
+---
+
+A reconnaissance engine for security learners, bug-bounty hunters, and researchers. One async core drives a **Rich CLI** with live progress, a **FastAPI SSE dashboard** that streams findings as they land, and multi-format reports — every default path works free and offline.
+
+## ✨ Features
+
+- **⚡ Async core** — one orchestrator fans modules out over a shared `httpx` client; a failing module never aborts the scan.
+- **🖥️ Rich CLI** — a live progress panel, severity-colored findings, and a heuristic risk verdict.
+- **🌐 Live web dashboard** — React + SSE; modules stream in one-by-one with a risk gauge and an interactive relationship graph.
+- **🕸️ Relationship graph** — target → subdomains → tech → open ports → JS endpoints → profiles, built from findings.
+- **📄 Reports** — JSON, Markdown, and self-contained HTML for bug-bounty writeups.
+- **🧩 12 modules** — DNS, subdomains, ports, headers, tech, crawler, dir bruteforce, JS endpoints, usernames, email/MX, plus optional screenshots & breach lookups.
+- **🔓 No paid API required** — optional Claude summaries, Playwright screenshots, and HIBP breach lookups all degrade gracefully to the free path.
+
+## 🚀 Quick start
 
 ```bash
-pipx install .        # or: uvx --from . osint
+pipx install .                # or: uvx --from . osint
+osint scan example.com        # full domain recon with a live panel
 ```
 
-Docker (bundles nmap):
+<div align="center">
+<em>DNS, subdomains, ports, headers, tech, crawler, dir-brute, JS endpoints — streamed live, scored, graphed.</em>
+</div>
+
+### More scans
+
+```bash
+osint scan example.com --html report.html   # shareable HTML report
+osint scan user@example.com                  # email recon (MX, optional breaches)
+osint scan octocat                           # username footprint (~15 platforms)
+osint scan 8.8.8.8 --only ports              # a single module
+osint modules                                # list available modules
+```
+
+**Flags:** `--json/--md/--html <path>` · `--only` · `--skip` · `--no-nmap` · `--ai` · `--concurrency` · `--timeout` · `-q/--quiet`
+
+Docker (bundles `nmap`):
 
 ```bash
 docker build -t osint . && docker run --rm osint scan example.com
 ```
 
-## Usage
+## 🏗️ Architecture
 
-```bash
-osint scan example.com                 # full domain recon, live panel
-osint scan example.com --html report.html
-osint scan user@example.com            # email recon
-osint scan octocat                     # username footprint (~15 platforms)
-osint scan 8.8.8.8 --only ports        # single module
-osint modules                          # list modules
+```mermaid
+flowchart LR
+    T([target]) --> C{classify}
+    C --> O[async orchestrator]
+    O -->|isolated modules| M[dns · subdomains · ports · headers<br/>tech · crawler · dir-brute · js<br/>username · email · screenshot · breach]
+    M --> R[[ScanReport<br/>+ risk score]]
+    R --> CLI[Rich CLI + reports]
+    R --> API[FastAPI SSE /scan]
+    API --> UI[React dashboard<br/>live findings · risk gauge · graph]
 ```
 
-Flags: `--json/--md/--html <path>`, `--only`, `--skip`, `--no-nmap`,
-`--concurrency`, `--timeout`, `-q/--quiet`.
+One `ScanReport` (Pydantic) is the single source of truth — shared by the CLI, the reporters, the SSE API, and the TypeScript frontend. No adapter layers.
 
-## Web dashboard (Phase 2a)
+## 🌐 Web dashboard
 
-A live dashboard that streams findings in as each module finishes, with a risk
-gauge and a relationship graph. Two processes — the SSE API and the Vite dev server:
+Two processes — the SSE API and the Vite dev server:
 
 ```bash
-# 1. API (streams findings live over SSE)
-osint serve                      # http://127.0.0.1:8000
+osint serve                              # http://127.0.0.1:8000  (streams findings live)
 
-# 2. Frontend
 cd osint-dashboard/frontend
-npm install && npm run dev       # http://localhost:5173
+npm install && npm run dev               # http://localhost:5173
 ```
 
-Open http://localhost:5173, enter a target, and watch modules stream in with a
-live risk gauge and relationship graph. Set `VITE_API_BASE_URL` to point the
-frontend at a non-default API origin.
+Open <http://localhost:5173>, enter a target, and watch modules stream in with a live risk gauge and relationship graph. Set `VITE_API_BASE_URL` to point the frontend at a non-default API origin.
 
-### Optional enrichments (Phase 2b)
+## 🧩 Optional enrichments
 
 All degrade gracefully; none are required, and the default path stays paid-API-free.
 
 ```bash
-pip install 'osint[ai,screenshots]'   # optional extras
-playwright install chromium           # for screenshots
-export ANTHROPIC_API_KEY=...           # AI summary via Claude (else heuristic)
-export HIBP_API_KEY=...                # email breach lookups (else skipped)
+pip install 'osint[ai,screenshots]'      # optional extras
+playwright install chromium              # for screenshots
+export ANTHROPIC_API_KEY=...             # AI summary via Claude (else heuristic)
+export HIBP_API_KEY=...                  # email breach lookups (else skipped)
 ```
 
-- **AI summary** — `osint scan <t> --ai` (or `?ai=true` on the API); a free heuristic narrative without a key.
-- **Screenshots** — homepage capture on domain scans; an "unavailable" notice if Playwright isn't installed.
-- **Breaches** — HaveIBeenPwned on email scans; a "skipped" notice without a key.
+| Enrichment | Default (free) | Opted-in |
+|---|---|---|
+| **AI summary** | heuristic narrative | Claude (`--ai` / `?ai=true` + key) |
+| **Screenshots** | "unavailable" notice | homepage PNG (Playwright) |
+| **Breaches** | "skipped" notice | HaveIBeenPwned (`HIBP_API_KEY`) |
 
-## Modules
+## 📦 Modules
 
-DNS · subdomains (crt.sh) · ports (nmap, optional) · security headers ·
-tech fingerprint · crawler · directory bruteforce · JS endpoint/secret
-extraction · username footprint · email/MX · screenshots (optional) ·
-breach lookups (optional) · heuristic risk scoring.
+| Target | Modules |
+|---|---|
+| **domain** | dns · subdomains (crt.sh) · ports (nmap) · security headers · tech fingerprint · crawler · directory bruteforce · JS endpoint/secret extraction · screenshot |
+| **email** | email/MX · breach lookups |
+| **username** | footprint across ~15 platforms |
+| **ip** | ports |
 
-## Development
+All findings feed a weighted **risk score** (INFO → CRITICAL).
+
+## 🛠️ Development
 
 ```bash
 pip install -e ".[dev]"
+ruff check osint/ tests/
 pytest
 ```
 
-## Roadmap
+Tests make no live network calls, use no real browser, and call no real LLM (`respx` + monkeypatching). CI runs ruff + pytest on every push.
 
-Shipped: Phase 1 (async core + CLI + reports), Phase 2a (SSE API + live dashboard + graph),
-Phase 2b (AI summary, screenshots, breach lookups).
+## 🗺️ Status
+
+| Phase | Scope | State |
+|---|---|---|
+| **1** | Async core · CLI · reports | ✅ Shipped |
+| **2a** | SSE API · live dashboard · graph | ✅ Shipped |
+| **2b** | AI summary · screenshots · breach lookups | ✅ Shipped |
+
+## 📄 License
+
+[MIT](LICENSE) © AMREESHAYS

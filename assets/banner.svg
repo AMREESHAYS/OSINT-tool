@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" width="1200" height="320" role="img" aria-label="OSINT Recon Engine">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d1426"/>
+      <stop offset="0.55" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#070a14"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.78" cy="0.28" r="0.55">
+      <stop offset="0" stop-color="#00ffa6" stop-opacity="0.20"/>
+      <stop offset="1" stop-color="#00ffa6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="title" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#e8ffff"/>
+      <stop offset="1" stop-color="#00ffa6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="320" rx="18" fill="url(#bg)"/>
+  <rect width="1200" height="320" rx="18" fill="url(#glow)"/>
+
+  <!-- grid -->
+  <g stroke="#1e2b45" stroke-width="1" opacity="0.5">
+    <path d="M0 80 H1200 M0 160 H1200 M0 240 H1200"/>
+    <path d="M120 0 V320 M240 0 V320 M360 0 V320 M480 0 V320 M600 0 V320 M720 0 V320 M840 0 V320 M960 0 V320 M1080 0 V320"/>
+  </g>
+
+  <!-- radar motif -->
+  <g transform="translate(980,160)" fill="none" stroke="#00ffa6">
+    <circle r="110" stroke-opacity="0.15"/>
+    <circle r="78" stroke-opacity="0.25"/>
+    <circle r="46" stroke-opacity="0.4"/>
+    <circle r="6" fill="#00ffa6" stroke="none"/>
+    <path d="M0 0 L104 -34" stroke-width="2" stroke-opacity="0.7"/>
+    <circle cx="70" cy="-52" r="4" fill="#38bdf8" stroke="none"/>
+    <circle cx="-58" cy="34" r="4" fill="#a78bfa" stroke="none"/>
+    <circle cx="30" cy="72" r="4" fill="#f59e0b" stroke="none"/>
+    <circle cx="-84" cy="-20" r="3" fill="#f472b6" stroke="none"/>
+  </g>
+
+  <!-- prompt -->
+  <text x="80" y="96" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="20" fill="#00ffa6" opacity="0.85">$ osint scan target</text>
+
+  <!-- title -->
+  <text x="78" y="176" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="72" font-weight="800" fill="url(#title)">OSINT Recon Engine</text>
+
+  <!-- tagline -->
+  <text x="80" y="214" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="23" fill="#8ea0c9">Fast, async open-source reconnaissance — no paid API required.</text>
+
+  <!-- feature chips -->
+  <g font-family="ui-monospace, Menlo, Consolas, monospace" font-size="15" fill="#cfe8ff">
+    <g transform="translate(80,250)">
+      <rect width="150" height="34" rx="17" fill="#12203a" stroke="#234" stroke-opacity="0.6"/>
+      <text x="75" y="22" text-anchor="middle">async core</text>
+    </g>
+    <g transform="translate(244,250)">
+      <rect width="178" height="34" rx="17" fill="#12203a" stroke="#234" stroke-opacity="0.6"/>
+      <text x="89" y="22" text-anchor="middle">live SSE dashboard</text>
+    </g>
+    <g transform="translate(436,250)">
+      <rect width="168" height="34" rx="17" fill="#12203a" stroke="#234" stroke-opacity="0.6"/>
+      <text x="84" y="22" text-anchor="middle">relationship graph</text>
+    </g>
+    <g transform="translate(618,250)">
+      <rect width="150" height="34" rx="17" fill="#12203a" stroke="#234" stroke-opacity="0.6"/>
+      <text x="75" y="22" text-anchor="middle">risk scoring</text>
+    </g>
+  </g>
+</svg>

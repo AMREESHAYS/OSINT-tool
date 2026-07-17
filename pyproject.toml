@@ -2,7 +2,20 @@
 name = "osint"
 version = "1.0.0"
 description = "OSINT reconnaissance engine — no paid API required"
+readme = "README.md"
 requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "AMREESHAYS", email = "amreesh192006@gmail.com" }]
+keywords = ["osint", "reconnaissance", "security", "bug-bounty", "recon", "cli", "fastapi"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+]
 dependencies = [
     "httpx>=0.27",
     "pydantic>=2.7",
@@ -21,6 +34,11 @@ screenshots = ["playwright>=1.44"]
 
 [project.scripts]
 osint = "osint.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/AMREESHAYS/OSINT-tool"
+Repository = "https://github.com/AMREESHAYS/OSINT-tool"
+Issues = "https://github.com/AMREESHAYS/OSINT-tool/issues"
 
 [build-system]
 requires = ["hatchling"]
