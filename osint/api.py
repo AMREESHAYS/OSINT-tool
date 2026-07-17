@@ -80,9 +80,11 @@ async def scan_stream(target: str, only: str | None = None,
         try:
             await task
             report = holder["report"]
+            # summarize may make a blocking LLM call on the ?ai=true path — keep it off the event loop.
+            summary = await asyncio.to_thread(summarize, report, ai)
             yield _sse("report", {"report": json.loads(report.model_dump_json()),
                                   "graph": build_graph(report),
-                                  "summary": summarize(report, use_llm=ai)})
+                                  "summary": summary})
         except Exception as exc:  # noqa: BLE001 - surface any scan failure as an SSE error event, never a dead stream
             yield _sse("error", {"detail": str(exc) or exc.__class__.__name__})
 

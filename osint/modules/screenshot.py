@@ -1,6 +1,6 @@
 import base64
 
-from osint.core.models import Finding, Severity
+from osint.core.models import Finding
 from osint.modules.base import Context
 
 
@@ -28,7 +28,8 @@ class ScreenshotModule:
             png = await _capture(url, ctx.settings.timeout)
         except Exception:  # noqa: BLE001 - Playwright/browser absent or capture failed → degrade, never raise
             return [Finding(module=self.name, title="Screenshots unavailable",
-                            detail="Install with: pip install 'osint[screenshots]' && playwright install chromium.")]
+                            detail="Capture failed or Playwright not installed. "
+                                   "Enable with: pip install 'osint[screenshots]' && playwright install chromium.")]
         uri = "data:image/png;base64," + base64.b64encode(png).decode("ascii")
         return [Finding(module=self.name, title="Homepage screenshot",
                         detail="Homepage captured.", data={"image": uri})]

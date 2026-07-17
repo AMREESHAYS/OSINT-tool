@@ -1,6 +1,17 @@
+import json
 import os
 
 from osint.core.models import ScanReport, Severity
+
+
+def _trimmed_json(report: ScanReport) -> str:
+    # Drop per-finding `data` blobs (e.g. a screenshot's base64 PNG) before sending
+    # to the LLM — they can be huge and blow up token cost / overflow the context.
+    data = report.model_dump(mode="json")
+    for module in data.get("modules", []):
+        for finding in module.get("findings", []):
+            finding.pop("data", None)
+    return json.dumps(data)
 
 
 def _heuristic(report: ScanReport) -> str:
@@ -46,7 +57,7 @@ def _llm_summary(report: ScanReport) -> str | None:
             model="claude-haiku-4-5-20251001",
             max_tokens=200,
             system="You are a security recon analyst. Summarize this scan in 2-3 concise sentences.",
-            messages=[{"role": "user", "content": report.model_dump_json()}],
+            messages=[{"role": "user", "content": _trimmed_json(report)}],
         )
         text = "".join(block.text for block in message.content if getattr(block, "type", "") == "text")
         return text.strip() or None

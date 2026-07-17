@@ -57,3 +57,13 @@ def test_use_llm_false_never_calls_llm(monkeypatch):
         raise AssertionError("LLM must not be called when use_llm=False")
     monkeypatch.setattr(summary_mod, "_llm_summary", boom)
     assert "example.com" in summarize(_report([]), use_llm=False)
+
+
+def test_trimmed_json_drops_finding_data():
+    # A screenshot base64 blob must not be sent to the LLM.
+    modules = [ModuleResult(module="screenshot", ok=True, duration_ms=1, findings=[
+        Finding(module="screenshot", title="Homepage screenshot", detail="Homepage captured.",
+                data={"image": "data:image/png;base64,HUGEBLOB"})])]
+    out = summary_mod._trimmed_json(_report(modules))
+    assert "HUGEBLOB" not in out
+    assert "Homepage screenshot" in out  # titles kept
