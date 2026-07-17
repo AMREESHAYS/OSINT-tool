@@ -49,11 +49,27 @@ Open http://localhost:5173, enter a target, and watch modules stream in with a
 live risk gauge and relationship graph. Set `VITE_API_BASE_URL` to point the
 frontend at a non-default API origin.
 
+### Optional enrichments (Phase 2b)
+
+All degrade gracefully; none are required, and the default path stays paid-API-free.
+
+```bash
+pip install 'osint[ai,screenshots]'   # optional extras
+playwright install chromium           # for screenshots
+export ANTHROPIC_API_KEY=...           # AI summary via Claude (else heuristic)
+export HIBP_API_KEY=...                # email breach lookups (else skipped)
+```
+
+- **AI summary** — `osint scan <t> --ai` (or `?ai=true` on the API); a free heuristic narrative without a key.
+- **Screenshots** — homepage capture on domain scans; an "unavailable" notice if Playwright isn't installed.
+- **Breaches** — HaveIBeenPwned on email scans; a "skipped" notice without a key.
+
 ## Modules
 
 DNS · subdomains (crt.sh) · ports (nmap, optional) · security headers ·
 tech fingerprint · crawler · directory bruteforce · JS endpoint/secret
-extraction · username footprint · email/MX · heuristic risk scoring.
+extraction · username footprint · email/MX · screenshots (optional) ·
+breach lookups (optional) · heuristic risk scoring.
 
 ## Development
 
@@ -64,4 +80,5 @@ pytest
 
 ## Roadmap
 
-Phase 2: FastAPI SSE API + React dashboard, entity correlation graph, optional AI summary.
+Shipped: Phase 1 (async core + CLI + reports), Phase 2a (SSE API + live dashboard + graph),
+Phase 2b (AI summary, screenshots, breach lookups).
