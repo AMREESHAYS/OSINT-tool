@@ -1,0 +1,7 @@
+.git
+tests
+docs
+osint-dashboard
+__pycache__
+*.pyc
+.venv
