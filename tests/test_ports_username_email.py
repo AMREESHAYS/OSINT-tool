@@ -48,3 +48,9 @@ async def test_email_extracts_domain(ctx, monkeypatch):
     joined = " ".join(f.detail for f in findings)
     assert "example.com" in joined
     assert "mail.example.com." in joined
+
+
+def test_registry_includes_2b_modules():
+    from osint.modules.registry import all_modules
+    names = {m.name for m in all_modules()}
+    assert {"screenshot", "breach"} <= names
